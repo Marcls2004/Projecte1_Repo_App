@@ -5,7 +5,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 class CartelleraActivity {
 
-    fun llegirUrlServidor(context: Context): String? {
+    /*fun llegirUrlServidor(context: Context): String? {
         val fitxer = File(context.filesDir, "CONFIG.XML")
         if (!fitxer.exists()) return null
 
@@ -26,6 +26,6 @@ class CartelleraActivity {
             e.printStackTrace()
             null
         }
-    }
+    }*/
 
 }

@@ -13,9 +13,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import org.xmlpull.v1.XmlPullParser
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.StringWriter
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okhttp3.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,15 +43,29 @@ class MainActivity : AppCompatActivity() {
         val connectButton = findViewById<Button>(R.id.connectButton)
         val statusLabel = findViewById<TextView>(R.id.statusLabel)
 
-        // REQUISITO 11: Comprobar si existe el archivo CONFIG.XML (Fíjate en las mayúsculas del nombre)
+        // REQUISITO 11: Comprobar si existe el archivo CONFIG.XML
         val fitxerConfig = File(filesDir, "CONFIG.XML")
 
         if (fitxerConfig.exists()) {
-            statusLabel.text = "Configuració existent trobada a CONFIG.XML.\nConnectant de forma automàtica..."
+            statusLabel.text = "Configuració existent trobada. Camps emplenats automàticament."
             statusLabel.setTextColor(Color.parseColor("#27ae60"))
-            Toast.makeText(this, "Sessió restaurada automàticament", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Dades recuperades", Toast.LENGTH_SHORT).show()
 
-            // TODO: Aquí saltaremos directamente a la Tarea 12 (Cartellera) en el futuro
+            // LEER EL XML Y RELLENAR LOS CONTENEDORES
+            try {
+                val fis = openFileInput("CONFIG.XML")
+                val mapaConfig = parseConfigXml(fis)
+                fis.close()
+
+                // Asignamos los valores recuperados a cada EditText
+                serverField.setText(mapaConfig["serverUrl"] ?: "")
+                nameField.setText(mapaConfig["buyerName"] ?: "")
+                emailField.setText(mapaConfig["buyerEmail"] ?: "")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                statusLabel.text = "ERROR: No s'ha pogut llegir el fitxer CONFIG.XML existent."
+                statusLabel.setTextColor(Color.RED)
+            }
         }
 
         connectButton.setOnClickListener {
@@ -59,28 +80,77 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            try {
-                // CORRECCIÓN: Ahora pasamos 'this' como contexto
-                saveConfigXml(this, url, nom, correu)
+            statusLabel.text = "Intentant connectar al servidor..."
+            statusLabel.setTextColor(Color.BLUE)
 
-                statusLabel.text = "ÈXIT: Dades guardades correctament a CONFIG.XML.\nConnectat al servidor: $url"
-                statusLabel.setTextColor(Color.parseColor("#27ae60"))
-                Toast.makeText(this, "Configuració guardada amb èxit!", Toast.LENGTH_LONG).show()
+            // Configurar cliente OkHttp para WebSocket
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
 
-                // TODO: Tras guardar con éxito, también podemos abrir la Cartellera (Tarea 12)
-                val intent = Intent(this, CartelleraActivity::class.java)
-                startActivity(intent)
-                finish()
+            client.newWebSocket(request, object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    // La conexión se realiza en un hilo secundario, pasamos al hilo principal para actualizar la UI
+                    runOnUiThread {
+                        try {
+                            saveConfigXml(this@MainActivity, url, nom, correu)
 
-            } catch (e: Exception) {
-                statusLabel.text = "ERROR: No s'ha pogut guardar o connectar.\nMotiu: ${e.message}"
-                statusLabel.setTextColor(Color.RED)
-                Toast.makeText(this, "Error en el primer inici", Toast.LENGTH_SHORT).show()
-            }
+                            statusLabel.text = "ÈXIT: Connectat correctament a $url\nDades guardades a CONFIG.XML."
+                            statusLabel.setTextColor(Color.parseColor("#27ae60"))
+                            Toast.makeText(this@MainActivity, "Configuració i connexió amb èxit!", Toast.LENGTH_LONG).show()
+
+                            // Descomenta para ir a la siguiente pantalla
+                            /*val intent = Intent(this@MainActivity, CartelleraActivity::class.java)
+                            startActivity(intent)
+                            finish()*/
+                        } catch (e: Exception) {
+                            statusLabel.text = "ERROR: Connexió establerta però no s'ha pogut guardar el XML."
+                            statusLabel.setTextColor(Color.RED)
+                        }
+                    }
+                }
+
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    // Si el servidor local está apagado o la IP está mal, fallará aquí
+                    runOnUiThread {
+                        statusLabel.text = "ERROR: No s'ha pogut connectar al servidor.\nMotiu: ${t.message}"
+                        statusLabel.setTextColor(Color.RED)
+                        Toast.makeText(this@MainActivity, "Error de connexió de xarxa", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
         }
     }
 
-    // Mantenemos la función recibiendo el Context para cumplir con MP06 correctamente
+    // Función auxiliar para parsear el XML y extraer las etiquetas en un Mapa de strings
+    private fun parseConfigXml(inputStream: FileInputStream): Map<String, String> {
+        val mapa = mutableMapOf<String, String>()
+        val parser = Xml.newPullParser()
+        parser.setInput(inputStream, "UTF-8")
+
+        var eventType = parser.eventType
+        var tagActual = ""
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            when (eventType) {
+                XmlPullParser.START_TAG -> {
+                    tagActual = parser.name
+                }
+                XmlPullParser.TEXT -> {
+                    val texto = parser.text.trim()
+                    if (texto.isNotEmpty()) {
+                        when (tagActual) {
+                            "serverUrl" -> mapa["serverUrl"] = texto
+                            "buyerName" -> mapa["buyerName"] = texto
+                            "buyerEmail" -> mapa["buyerEmail"] = texto
+                        }
+                    }
+                }
+            }
+            eventType = parser.next()
+        }
+        return mapa
+    }
+
     private fun saveConfigXml(context: Context, url: String, name: String, email: String) {
         val fileOutputStream: FileOutputStream
         try {
@@ -113,7 +183,7 @@ class MainActivity : AppCompatActivity() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            throw e // Lanzamos la excepción para que el catch del botón la capture e informe del error
+            throw e
         }
     }
 }
