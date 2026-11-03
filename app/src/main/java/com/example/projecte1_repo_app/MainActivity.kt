@@ -1,4 +1,4 @@
-package com.marcl.entradium
+package com.example.projecte1_repo_app
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

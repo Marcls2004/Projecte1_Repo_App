@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.projecte1_repo_app"
+    namespace = "com.marcl.entradium"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.projecte1_repo_app"
+        applicationId = "com.marcl.entradium"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
