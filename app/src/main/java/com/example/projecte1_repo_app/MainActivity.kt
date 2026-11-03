@@ -89,7 +89,6 @@ class MainActivity : AppCompatActivity() {
 
             client.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
-                    // La conexión se realiza en un hilo secundario, pasamos al hilo principal para actualizar la UI
                     runOnUiThread {
                         try {
                             saveConfigXml(this@MainActivity, url, nom, correu)
@@ -98,16 +97,23 @@ class MainActivity : AppCompatActivity() {
                             statusLabel.setTextColor(Color.parseColor("#27ae60"))
                             Toast.makeText(this@MainActivity, "Configuració i connexió amb èxit!", Toast.LENGTH_LONG).show()
 
-                            // Descomenta para ir a la siguiente pantalla
-                            /*val intent = Intent(this@MainActivity, CartelleraActivity::class.java)
+                            // Cerramos la conexión de prueba limpia
+                            //webSocket.close(1000, "Test de conexión completado")
+
+                            // --- AQUÍ ACTIVAMOS EL SALTO DE PANTALLA ---
+                            // Cambia 'DetallEsdevenimentActivity' por la pantalla a la que quieras ir
+                            val intent = Intent(this@MainActivity, DetallEsdevenimentActivity::class.java)
+                            intent.putExtra("SERVER_URL", url) // Enviamos la URL a la siguiente pantalla
                             startActivity(intent)
-                            finish()*/
+                            finish() // Cerramos MainActivity para que el usuario no pueda volver atrás al dar al botón "Atrás"
+
                         } catch (e: Exception) {
-                            statusLabel.text = "ERROR: Connexió establerta però no s'ha pogut guardar el XML."
+                            statusLabel.text = "ERROR: Connexió establerta de xarxa pero no s'ha pogut guardar el XML."
                             statusLabel.setTextColor(Color.RED)
                         }
                     }
                 }
+
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     // Si el servidor local está apagado o la IP está mal, fallará aquí
