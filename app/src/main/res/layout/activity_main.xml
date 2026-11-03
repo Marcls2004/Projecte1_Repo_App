@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://android.com"
+    xmlns:tools="http://android.com"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="com.example.projecte1_repo_app.MainActivity">
 
-    <!-- Este contenedor organiza todo verticalmente y se centra en la pantalla -->
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
         android:padding="24dp"
@@ -19,9 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Título Principal -->
         <TextView
-            android:id="@+id/titleLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Entradium"
@@ -30,34 +28,15 @@
             android:textColor="#000000"
             android:layout_marginBottom="4dp"/>
 
-        <!-- Subtítulo -->
         <TextView
-            android:id="@+id/subtitleLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Configuración del Servidor"
+            android:text="Configuració Inicial"
             android:textSize="13sp"
             android:textColor="#36454F"
             android:layout_marginBottom="24dp"/>
 
-        <!-- Etiqueta Nombre -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nom d'Usuari:"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp"/>
-
-        <!-- Campo Nombre -->
-        <EditText
-            android:id="@+id/nameField"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="16dp"
-            android:textAlignment="center"/>
-
-        <!-- Etiqueta URL -->
+        <!-- 1. Campo URL Servidor -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,22 +44,55 @@
             android:textSize="14sp"
             android:layout_marginBottom="4dp"/>
 
-        <!-- Campo URL -->
         <EditText
             android:id="@+id/serverField"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:text="ws://platea3.ieti.site"
             android:inputType="textUri"
+            android:layout_marginBottom="16dp"
+            android:textAlignment="center"/>
+
+        <!-- 2. Campo Nombre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nom del Comprador:"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/nameField"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="El teu nom complet"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="16dp"
+            android:textAlignment="center"/>
+
+        <!-- 3. Campo Correo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Correu Electrònic:"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/emailField"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="correu@exemple.com"
+            android:inputType="textEmailAddress"
             android:layout_marginBottom="24dp"
             android:textAlignment="center"/>
 
-        <!-- Botón Conectar -->
+        <!-- Botón de acción -->
         <Button
             android:id="@+id/connectButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="INICIAR SESSIO"
+            android:text="DESAR I CONECTAR"
             android:backgroundTint="#27ae60"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
@@ -88,12 +100,13 @@
             android:paddingRight="16dp"
             android:layout_marginBottom="12dp"/>
 
-        <!-- Estado -->
+        <!-- Etiqueta informativa de éxito o error -->
         <TextView
             android:id="@+id/statusLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"/>
+            android:textSize="14sp"
+            android:textAlignment="center"/>
 
     </LinearLayout>
 
