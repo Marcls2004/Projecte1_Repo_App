@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Comptador de la cistella a la part superior -->
+    <TextView
+        android:id="@+id/txtComptadorCesta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_gravity="end"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Títol de l'esdeveniment -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Coses que no es diuen en un sopar"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Botó per afegir l'entrada general -->
+    <Button
+        android:id="@+id/btnAfegir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Afegir Entrada General (12.00 €)" />
+
+</LinearLayout>
