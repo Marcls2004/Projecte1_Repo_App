@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Títol de la pantalla -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="La teva Cistella"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Llista d'elements afegits (quantitats, productes i preus) -->
+    <ListView
+        android:id="@+id/listViewCesta"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Preu Total Global -->
+    <TextView
+        android:id="@+id/txtTotalGlobal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total: 0.00 €"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Botó per validar/comprar (preparat per a la Tasca 15) -->
+    <Button
+        android:id="@+id/btnValidarCesta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Validar Cistella"
+        android:backgroundTint="#4A47F5"/>
+
+</LinearLayout>
