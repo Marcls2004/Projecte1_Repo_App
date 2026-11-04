@@ -102,10 +102,10 @@ class MainActivity : AppCompatActivity() {
 
                             // --- AQUÍ ACTIVAMOS EL SALTO DE PANTALLA ---
                             // Cambia 'DetallEsdevenimentActivity' por la pantalla a la que quieras ir
-                            val intent = Intent(this@MainActivity, DetallEsdevenimentActivity::class.java)
-                            intent.putExtra("SERVER_URL", url) // Enviamos la URL a la siguiente pantalla
+                            val intent = Intent(this@MainActivity, CartelleraActivity::class.java)
+                            intent.putExtra("SERVER_URL", url) // Enviamos la IP/WebSocket a la Cartellera
                             startActivity(intent)
-                            finish() // Cerramos MainActivity para que el usuario no pueda volver atrás al dar al botón "Atrás"
+                            finish() // Cerramos la pantalla inicial
 
                         } catch (e: Exception) {
                             statusLabel.text = "ERROR: Connexió establerta de xarxa pero no s'ha pogut guardar el XML."

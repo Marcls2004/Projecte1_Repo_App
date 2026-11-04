@@ -39,6 +39,12 @@
             android:name=".CestaActivity"
             android:exported="false" />
 
+        <!-- Pantalla de la cartellera de películas/eventos -->
+        <activity
+            android:name=".CartelleraActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>
