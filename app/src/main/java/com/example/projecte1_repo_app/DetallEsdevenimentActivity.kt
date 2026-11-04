@@ -18,8 +18,7 @@ class DetallEsdevenimentActivity : AppCompatActivity() {
         val txtComptador: TextView = findViewById(R.id.txtComptadorCesta)
 
         // Creem un exemple d'entrada general per provar-ho
-        val entradaDeProva = TipusEntrada("T1", "Entrada General Dempeus", 12.00, "general")
-
+        val entradaDeProva = TipusEntrada("T1_3", "Entrada General Dempeus", 12.00, "general", "E1")
         // 2. Programem què passa quan l'usuari CLICA el botó d'afegir
         btnAfegir.setOnClickListener {
             // Pas A: Guardem l'entrada al nostre CestaManager
