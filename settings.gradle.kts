@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Projecte1_Repo_App"
 include(":app")
+include(":app")
+ 
