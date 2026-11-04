@@ -21,4 +21,7 @@ object CestaManager {
     fun obtenirElements(): Map<TipusEntrada, Int> {
         return elementsCesta
     }
+    fun buidar() {
+        elementsCesta.clear()
+    }
 }

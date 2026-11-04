@@ -17,6 +17,7 @@ class DetallEsdevenimentActivity : AppCompatActivity() {
         val btnAfegir: Button = findViewById(R.id.btnAfegir)
         val txtComptador: TextView = findViewById(R.id.txtComptadorCesta)
 
+
         // Recuperamos la entrada seleccionada desde la cartelera
         val idTipus = intent.getStringExtra("idTipus")
         val nomTipus = intent.getStringExtra("nomTipus")

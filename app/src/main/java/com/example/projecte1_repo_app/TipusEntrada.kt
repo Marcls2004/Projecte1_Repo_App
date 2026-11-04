@@ -4,5 +4,6 @@ data class TipusEntrada(
     val idTipus: String,
     val nomTipus: String,
     val preuTipus: Double,
-    val tipusZona: String = "general"
+    val tipusZona: String = "general",
+    val idEsdeveniment: String = ""
 )
