@@ -48,7 +48,7 @@
             android:id="@+id/serverField"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="ws://10.0.2.2:8888"
+            android:text="wss://platea3.ieti.site"
             android:inputType="textUri"
             android:layout_marginBottom="16dp"
             android:textAlignment="center"/>

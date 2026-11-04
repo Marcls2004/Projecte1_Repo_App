@@ -16,20 +16,23 @@
         android:layout_gravity="end"
         android:layout_marginBottom="16dp" />
 
-    <!-- Títol de l'esdeveniment -->
     <TextView
+        android:id="@+id/txtNomEntrada"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Coses que no es diuen en un sopar"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp" />
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/txtPreuEntrada"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"/>
 
     <!-- Botó per afegir l'entrada general -->
     <Button
         android:id="@+id/btnAfegir"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Afegir Entrada General (12.00 €)" />
+        android:text="Afegir Entrada" />
 
 </LinearLayout>

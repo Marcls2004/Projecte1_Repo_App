@@ -26,11 +26,11 @@ class CestaActivity : AppCompatActivity() {
 
         // 2. Recorrem el mapa per calcular el desglossament per línia i el total
         for ((entrada, quantitat) in elementsCesta) {
-            val preuLinia = entrada.preu * quantitat
+            val preuLinia = entrada.preuTipus * quantitat
             preuTotalGlobal += preuLinia
 
             // Format que es veurà a la llista: Nom + Quantitat + Preu total de la línia
-            llistaTextos.add("${entrada.nom} x$quantitat  ->  ${preuLinia} €")
+            llistaTextos.add("${entrada.nomTipus} x$quantitat  ->  ${preuLinia} €")
         }
 
         // 3. Pintem la llista a la pantalla

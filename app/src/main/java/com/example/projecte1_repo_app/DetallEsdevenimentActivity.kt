@@ -1,3 +1,4 @@
+
 package com.example.projecte1_repo_app
 
 import android.content.Intent
@@ -13,29 +14,52 @@ class DetallEsdevenimentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detall_esdeveniment)
 
-        // 1. Definim els elements de la pantalla
         val btnAfegir: Button = findViewById(R.id.btnAfegir)
         val txtComptador: TextView = findViewById(R.id.txtComptadorCesta)
 
-        // Creem un exemple d'entrada general per provar-ho
-        val entradaDeProva = TipusEntrada("T1", "Entrada General Dempeus", 12.00, "general")
+        // Recuperamos la entrada seleccionada desde la cartelera
+        val idTipus = intent.getStringExtra("idTipus")
+        val nomTipus = intent.getStringExtra("nomTipus")
+        val preuTipus = intent.getDoubleExtra("preuTipus", 0.0)
+        val tipusZona = intent.getStringExtra("tipusZona") ?: "general"
 
-        // 2. Programem què passa quan l'usuari CLICA el botó d'afegir
+        // Mostramos los datos de la entrada seleccionada
+        val txtNomEntrada: TextView = findViewById(R.id.txtNomEntrada)
+        val txtPreuEntrada: TextView = findViewById(R.id.txtPreuEntrada)
+
+        txtNomEntrada.text = nomTipus ?: "Entrada"
+        txtPreuEntrada.text = "$preuTipus €"
+
         btnAfegir.setOnClickListener {
-            // Pas A: Guardem l'entrada al nostre CestaManager
-            CestaManager.afegirEntrada(entradaDeProva)
 
-            // Pas B: Preguntem al CestaManager quin és el total d'elements ara mateix
+            if (idTipus == null || nomTipus == null) {
+                Toast.makeText(
+                    this,
+                    "No se ha seleccionado ninguna entrada",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val entrada = TipusEntrada(
+                idTipus = idTipus,
+                nomTipus = nomTipus,
+                preuTipus = preuTipus,
+                tipusZona = tipusZona
+            )
+
+            CestaManager.afegirEntrada(entrada)
+
             val totalActualitzat = CestaManager.obtenirTotalElements()
-
-            // Pas C: Pintem aquest número al TextView del comptador
             txtComptador.text = totalActualitzat.toString()
 
-            Toast.makeText(this, "Entrada afegida a la cistella!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Entrada afegida a la cistella!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
-        // 3. ENLLAÇ PER ANAR A LA CESTA (Prototip)
-        // Si cliques el número/comptador de dalt a la dreta, s'obre la CestaActivity
         txtComptador.setOnClickListener {
             val intent = Intent(this, CestaActivity::class.java)
             startActivity(intent)
