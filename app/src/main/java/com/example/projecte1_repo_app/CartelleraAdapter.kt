@@ -58,6 +58,7 @@ class CartelleraAdapter(
                     intent.putExtra("nomTipus", entrada.nomTipus)
                     intent.putExtra("preuTipus", entrada.preuTipus)
                     intent.putExtra("tipusZona", entrada.tipusZona)
+                    intent.putExtra("idEsdeveniment", esdeveniment.id)
 
                     holder.itemView.context.startActivity(intent)
                 }
