@@ -65,7 +65,7 @@ class CestaActivity : AppCompatActivity() {
             for ((entrada, quantitat) in elements) {
                 entrades.put(JSONObject().apply {
                     put("idEsdeveniment", entrada.idEsdeveniment)
-                    put("idTipus", entrada.id)
+                    put("idTipus", entrada.idTipus)
                     put("quantitat", quantitat)
                 })
             }

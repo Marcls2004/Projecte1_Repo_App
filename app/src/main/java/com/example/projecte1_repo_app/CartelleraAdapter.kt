@@ -14,6 +14,7 @@ class CartelleraAdapter(
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tTitol: TextView = view.findViewById(R.id.textTitol)
+        val tData: TextView = view.findViewById(R.id.textData)
         val layoutEntrades: LinearLayout =
             view.findViewById(R.id.layoutEntrades)
     }
@@ -32,6 +33,7 @@ class CartelleraAdapter(
         val esdeveniment = llista[position]
 
         holder.tTitol.text = esdeveniment.nom
+        holder.tData.text = esdeveniment.data
         holder.layoutEntrades.removeAllViews()
 
         holder.layoutEntrades.visibility =
