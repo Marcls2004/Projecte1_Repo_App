@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this@MainActivity, "Configuració i connexió amb èxit!", Toast.LENGTH_LONG).show()
 
                             // Cerramos la conexión de prueba limpia
-                            //webSocket.close(1000, "Test de conexión completado")
+                            webSocket.close(1000, "Test de conexión completado")
 
                             // --- AQUÍ ACTIVAMOS EL SALTO DE PANTALLA ---
                             // Cambia 'DetallEsdevenimentActivity' por la pantalla a la que quieras ir
@@ -124,6 +124,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             })
+        }
+
+        // Spec 11: les dades només es demanen el primer cop.
+        // Si ja hi ha CONFIG.XML (camps ja omplerts), ens connectem automàticament.
+        if (fitxerConfig.exists()) {
+            connectButton.performClick()
         }
     }
 

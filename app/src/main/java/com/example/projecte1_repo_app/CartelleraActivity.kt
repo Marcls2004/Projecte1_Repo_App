@@ -24,6 +24,7 @@ class CartelleraActivity : AppCompatActivity() {
 
     private lateinit var recyclerCartellera: RecyclerView
     private lateinit var navUser: TextView
+    private lateinit var btnCistella: TextView
 
     private lateinit var adapterCartellera: CartelleraAdapter
     private var webSocket: WebSocket? = null
@@ -56,6 +57,12 @@ class CartelleraActivity : AppCompatActivity() {
         recyclerCartellera.adapter = adapterCartellera
 
         recuperarNombreUsuario()
+
+        // Botó flotant: obre la cistella
+        btnCistella = findViewById(R.id.btnCistella)
+        btnCistella.setOnClickListener {
+            startActivity(android.content.Intent(this, CestaActivity::class.java))
+        }
 
         val serverUrl = intent.getStringExtra("SERVER_URL")
             ?: "ws://10.0.2.2:8888"
@@ -194,6 +201,12 @@ class CartelleraActivity : AppCompatActivity() {
             e.printStackTrace()
             navUser.text = "User"
         }
+    }
+
+    // Cada cop que tornem a aquesta pantalla, actualitzem el número de la cistella
+    override fun onResume() {
+        super.onResume()
+        btnCistella.text = CestaManager.obtenirTotalElements().toString()
     }
 
     override fun onDestroy() {
