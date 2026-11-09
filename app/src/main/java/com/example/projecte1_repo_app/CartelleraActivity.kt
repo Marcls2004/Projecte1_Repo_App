@@ -19,9 +19,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.xmlpull.v1.XmlPullParser
 import java.io.FileInputStream
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.widget.LinearLayout
 
 class CartelleraActivity : AppCompatActivity() {
 
