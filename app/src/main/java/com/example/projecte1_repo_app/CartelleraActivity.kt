@@ -64,6 +64,10 @@ class CartelleraActivity : AppCompatActivity() {
             startActivity(android.content.Intent(this, CestaActivity::class.java))
         }
 
+        findViewById<TextView>(R.id.navEntrada).setOnClickListener {
+            startActivity(android.content.Intent(this, LesMevesEntradesActivity::class.java))
+        }
+
         val serverUrl = intent.getStringExtra("SERVER_URL")
             ?: "ws://10.0.2.2:8888"
 
