@@ -13,6 +13,8 @@ import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
+import android.util.Xml
+import org.xmlpull.v1.XmlPullParser
 
 class CestaActivity : AppCompatActivity() {
 
@@ -55,17 +57,16 @@ class CestaActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // TODO: ajusta el nom del fitxer i les claus a com ho va guardar Marc (Tasca 11)
-            val prefs = getSharedPreferences("CONFIG", MODE_PRIVATE)
-            val nom = prefs.getString("nom", "") ?: ""
-            val correu = prefs.getString("correu", "") ?: ""
-            val url = prefs.getString("url", "wss://platea3.ieti.site") ?: "wss://platea3.ieti.site"
+            val config = llegirConfig()
+            val nom = config["buyerName"] ?: ""
+            val correu = config["buyerEmail"] ?: ""
+            val url = config["serverUrl"] ?: "wss://platea3.ieti.site"
 
             val entrades = JSONArray()
             for ((entrada, quantitat) in elements) {
                 entrades.put(JSONObject().apply {
                     put("idEsdeveniment", entrada.idEsdeveniment)
-                    put("idTipus", entrada.id)
+                    put("idTipus", entrada.idTipus)
                     put("quantitat", quantitat)
                 })
             }
@@ -111,7 +112,7 @@ class CestaActivity : AppCompatActivity() {
                                 )
                                 txtTotal.text = "Total a pagar: 0.0 €"
                                 btn.isEnabled = true
-                                mostrarMissatge("Compra realitzada ✅", "Els teus localitzadors:\n\n$llistat")
+                                mostrarMissatge("Compra realitzada", "Els teus localitzadors:\n\n$llistat")
                             }
                             close()
                         }
@@ -120,7 +121,7 @@ class CestaActivity : AppCompatActivity() {
                             val msg = resp.optString("message", "Error desconegut")
                             runOnUiThread {
                                 btn.isEnabled = true
-                                mostrarMissatge("Error ❌", msg)
+                                mostrarMissatge("Error", msg)
                             }
                             close()
                         }
@@ -132,15 +133,37 @@ class CestaActivity : AppCompatActivity() {
                 override fun onError(ex: Exception?) {
                     runOnUiThread {
                         btn.isEnabled = true
-                        mostrarMissatge("Error de connexió ❌", ex?.message ?: "No s'ha pogut connectar")
+                        mostrarMissatge("Error de connexió ", ex?.message ?: "No s'ha pogut connectar")
                     }
                 }
             }
             client.connect()
         } catch (e: Exception) {
             btn.isEnabled = true
-            mostrarMissatge("Error ❌", e.message ?: "URL no vàlida")
+            mostrarMissatge("Error ", e.message ?: "URL no vàlida")
         }
+    }
+
+    private fun llegirConfig(): Map<String, String> {
+        val mapa = mutableMapOf<String, String>()
+        try {
+            openFileInput("CONFIG.XML").use { fis ->
+                val parser = Xml.newPullParser()
+                parser.setInput(fis, "UTF-8")
+                var tag = ""
+                var ev = parser.eventType
+                while (ev != XmlPullParser.END_DOCUMENT) {
+                    when (ev) {
+                        XmlPullParser.START_TAG -> tag = parser.name
+                        XmlPullParser.TEXT -> if (parser.text.isNotBlank()) mapa[tag] = parser.text.trim()
+                    }
+                    ev = parser.next()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return mapa
     }
 
     private fun mostrarMissatge(titol: String, text: String) {

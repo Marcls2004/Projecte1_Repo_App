@@ -14,6 +14,7 @@ class CartelleraAdapter(
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tTitol: TextView = view.findViewById(R.id.textTitol)
+        val tData: TextView = view.findViewById(R.id.textData)
         val layoutEntrades: LinearLayout =
             view.findViewById(R.id.layoutEntrades)
     }
@@ -32,6 +33,7 @@ class CartelleraAdapter(
         val esdeveniment = llista[position]
 
         holder.tTitol.text = esdeveniment.nom
+        holder.tData.text = esdeveniment.data
         holder.layoutEntrades.removeAllViews()
 
         holder.layoutEntrades.visibility =
@@ -39,6 +41,11 @@ class CartelleraAdapter(
 
         if (esdeveniment.isExpanded) {
             for (entrada in esdeveniment.tipusEntrades) {
+
+                // Spec 13: de moment només es mostren les entrades GENERALS
+                if (entrada.tipusZona != "general") {
+                    continue
+                }
 
                 val textEntrada = TextView(holder.itemView.context)
 
@@ -58,11 +65,21 @@ class CartelleraAdapter(
                     intent.putExtra("nomTipus", entrada.nomTipus)
                     intent.putExtra("preuTipus", entrada.preuTipus)
                     intent.putExtra("tipusZona", entrada.tipusZona)
+                    intent.putExtra("idEsdeveniment", esdeveniment.id)
 
                     holder.itemView.context.startActivity(intent)
                 }
 
                 holder.layoutEntrades.addView(textEntrada)
+            }
+
+            // Si l'esdeveniment només té entrades numerades, ho indiquem
+            if (holder.layoutEntrades.childCount == 0) {
+                val textBuit = TextView(holder.itemView.context)
+                textBuit.text = "No hi ha entrades generals disponibles"
+                textBuit.textSize = 16f
+                textBuit.setPadding(8, 12, 8, 12)
+                holder.layoutEntrades.addView(textBuit)
             }
         }
 

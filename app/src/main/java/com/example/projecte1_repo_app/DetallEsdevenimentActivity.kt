@@ -1,4 +1,3 @@
-
 package com.example.projecte1_repo_app
 
 import android.content.Intent
@@ -10,21 +9,21 @@ import androidx.appcompat.app.AppCompatActivity
 
 class DetallEsdevenimentActivity : AppCompatActivity() {
 
+    private lateinit var txtComptador: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detall_esdeveniment)
 
         val btnAfegir: Button = findViewById(R.id.btnAfegir)
-        val txtComptador: TextView = findViewById(R.id.txtComptadorCesta)
+        txtComptador = findViewById(R.id.txtComptadorCesta)
 
-
-        // Recuperamos la entrada seleccionada desde la cartelera
         val idTipus = intent.getStringExtra("idTipus")
         val nomTipus = intent.getStringExtra("nomTipus")
         val preuTipus = intent.getDoubleExtra("preuTipus", 0.0)
         val tipusZona = intent.getStringExtra("tipusZona") ?: "general"
+        val idEsdeveniment = intent.getStringExtra("idEsdeveniment") ?: ""
 
-        // Mostramos los datos de la entrada seleccionada
         val txtNomEntrada: TextView = findViewById(R.id.txtNomEntrada)
         val txtPreuEntrada: TextView = findViewById(R.id.txtPreuEntrada)
 
@@ -32,13 +31,8 @@ class DetallEsdevenimentActivity : AppCompatActivity() {
         txtPreuEntrada.text = "$preuTipus €"
 
         btnAfegir.setOnClickListener {
-
             if (idTipus == null || nomTipus == null) {
-                Toast.makeText(
-                    this,
-                    "No se ha seleccionado ninguna entrada",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "No se ha seleccionado ninguna entrada", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -46,24 +40,23 @@ class DetallEsdevenimentActivity : AppCompatActivity() {
                 idTipus = idTipus,
                 nomTipus = nomTipus,
                 preuTipus = preuTipus,
-                tipusZona = tipusZona
+                tipusZona = tipusZona,
+                idEsdeveniment = idEsdeveniment
             )
 
             CestaManager.afegirEntrada(entrada)
+            txtComptador.text = CestaManager.obtenirTotalElements().toString()
 
-            val totalActualitzat = CestaManager.obtenirTotalElements()
-            txtComptador.text = totalActualitzat.toString()
-
-            Toast.makeText(
-                this,
-                "Entrada afegida a la cistella!",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(this, "Entrada afegida a la cistella!", Toast.LENGTH_SHORT).show()
         }
 
         txtComptador.setOnClickListener {
-            val intent = Intent(this, CestaActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, CestaActivity::class.java))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        txtComptador.text = CestaManager.obtenirTotalElements().toString()
     }
 }
