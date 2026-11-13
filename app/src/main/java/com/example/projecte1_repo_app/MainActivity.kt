@@ -125,12 +125,6 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
-
-        // Spec 11: les dades només es demanen el primer cop.
-        // Si ja hi ha CONFIG.XML (camps ja omplerts), ens connectem automàticament.
-        if (fitxerConfig.exists()) {
-            connectButton.performClick()
-        }
     }
 
     // Función auxiliar para parsear el XML y extraer las etiquetas en un Mapa de strings
