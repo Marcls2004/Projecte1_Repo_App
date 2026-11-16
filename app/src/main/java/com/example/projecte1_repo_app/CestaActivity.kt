@@ -2,7 +2,6 @@ package com.example.projecte1_repo_app
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
@@ -18,38 +17,48 @@ import org.xmlpull.v1.XmlPullParser
 
 class CestaActivity : AppCompatActivity() {
 
+    // NUEVO: campos de la clase (para usarlos desde refrescar())
+    private lateinit var adapter: CestaAdapter
+    private lateinit var txtTotalGlobal: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cesta)
 
         val listView: ListView = findViewById(R.id.listViewCesta)
-        val txtTotalGlobal: TextView = findViewById(R.id.txtTotalGlobal)
+        txtTotalGlobal = findViewById(R.id.txtTotalGlobal)   // CAMBIA: sin "val"
         val btnValidar: Button = findViewById(R.id.btnValidarCesta)
 
-        // 1. Recuperem els elements del CestaManager
-        val elementsCesta = CestaManager.obtenirElements()
-
-        val llistaTextos = mutableListOf<String>()
-        var preuTotalGlobal = 0.0
-
-        // 2. Recorrem el mapa per calcular el desglossament per línia i el total
-        for ((entrada, quantitat) in elementsCesta) {
-            val preuLinia = entrada.preuTipus * quantitat
-            preuTotalGlobal += preuLinia
-
-
-            // Format que es veurà a la llista: Nom + Quantitat + Preu total de la línia
-            llistaTextos.add("${entrada.nomTipus} x$quantitat  ->  ${preuLinia} €")
-        }
-
-        // 3. Pintem la llista a la pantalla
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, llistaTextos)
+        // CAMBIA: todo lo antiguo (elementsCesta, llistaTextos, el for, el ArrayAdapter
+        // y txtTotalGlobal.text) se sustituye por esto:
+        adapter = CestaAdapter(
+            linies = construirLinies(),
+            onMes = { entrada ->
+                CestaManager.canviarQuantitat(entrada, +1)
+                refrescar()
+            },
+            onMenys = { linia ->
+                if (linia.quantitat > 1) {
+                    CestaManager.canviarQuantitat(linia.entrada, -1)
+                    refrescar()
+                } else {
+                    confirmar("Vols treure \"${linia.entrada.nomTipus}\" de la cistella?") {
+                        CestaManager.eliminarEntrada(linia.entrada)
+                        refrescar()
+                    }
+                }
+            },
+            onEliminarButaca = { butaca ->
+                confirmar("Vols treure la fila ${butaca.fila}, butaca ${butaca.numero} de la cistella?") {
+                    CestaManager.eliminarButaca(butaca)
+                    refrescar()
+                }
+            }
+        )
         listView.adapter = adapter
+        refrescar()
 
-        // 4. Mostrem el preu total global
-        txtTotalGlobal.text = "Total a pagar: $preuTotalGlobal €"
-
-        // 5. Botó de validar: petició de compra al servidor (Tasca 15)
+        // 5. Botó de validar: SIN CAMBIOS
         btnValidar.setOnClickListener {
             val elements = CestaManager.obtenirElements()
             if (elements.isEmpty()) {
@@ -84,6 +93,32 @@ class CestaActivity : AppCompatActivity() {
         }
     }
 
+    // ===== NUEVO: tres funciones =====
+
+    // Junta entradas generales y butacas en una sola lista
+    private fun construirLinies(): List<LiniaCesta> =
+        CestaManager.obtenirElements().map { (entrada, quantitat) -> LiniaCesta.General(entrada, quantitat) } +
+                CestaManager.obtenirButaques().map { LiniaCesta.Butaca(it) }
+
+    // Redibuja la lista y recalcula el total
+    private fun refrescar() {
+        adapter.actualitzar(construirLinies())
+        val total = CestaManager.obtenirElements().entries.sumOf { it.key.preuTipus * it.value } +
+                CestaManager.obtenirButaques().sumOf { it.preu }
+        txtTotalGlobal.text = "Total a pagar: $total €"
+    }
+
+    // Diálogo de confirmación
+    private fun confirmar(missatge: String, onSi: () -> Unit) {
+        AlertDialog.Builder(this)
+            .setMessage(missatge)
+            .setPositiveButton("Eliminar") { _, _ -> onSi() }
+            .setNegativeButton("Cancel·lar", null)
+            .show()
+    }
+
+    // ===== A partir de aquí, igual que antes, salvo el bloque marcado =====
+
     private fun enviarCompra(
         url: String, json: String, btn: Button,
         listView: ListView, txtTotal: TextView
@@ -103,14 +138,10 @@ class CestaActivity : AppCompatActivity() {
                         "compraOk" -> {
                             val locs = resp.getJSONArray("localitzadors")
                             val llistat = (0 until locs.length()).joinToString("\n") { locs.getString(it) }
+                            // CAMBIA: solo este bloque runOnUiThread
                             runOnUiThread {
                                 CestaManager.buidar()
-                                listView.adapter = ArrayAdapter(
-                                    this@CestaActivity,
-                                    android.R.layout.simple_list_item_1,
-                                    emptyList<String>()
-                                )
-                                txtTotal.text = "Total a pagar: 0.0 €"
+                                refrescar()
                                 btn.isEnabled = true
                                 mostrarMissatge("Compra realitzada", "Els teus localitzadors:\n\n$llistat")
                             }
