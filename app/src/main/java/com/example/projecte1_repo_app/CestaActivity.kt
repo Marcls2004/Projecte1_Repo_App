@@ -2,6 +2,7 @@ package com.example.projecte1_repo_app
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Xml
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
@@ -11,9 +12,8 @@ import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URI
-import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
+import java.net.URI
 
 class CestaActivity : AppCompatActivity() {
 
