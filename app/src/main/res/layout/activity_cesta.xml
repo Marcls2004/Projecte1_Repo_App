@@ -39,6 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Validar Cistella"
+        android:layout_marginBottom="48dp"
         android:backgroundTint="#4A47F5"/>
 
 </LinearLayout>
