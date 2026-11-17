@@ -9,73 +9,67 @@ data class ButacaCesta(
     val numero: Int,
     val ambError: Boolean = false
 )
-object CestaManager {
-    // Mapa que guarda l'entrada i la quantitat seleccionada
-    private val elementsCesta = mutableMapOf<TipusEntrada, Int>()
 
-    // Spec 22: llista de les butaques numerades que l'usuari ha seleccionat
+object CestaManager {
+    private val elementsCesta = mutableMapOf<TipusEntrada, Int>()
     private val seientsCesta = mutableListOf<SeientCistella>()
+    private val butaques = mutableListOf<ButacaCesta>()
 
     fun afegirEntrada(entrada: TipusEntrada) {
-        // Només permetre si és general (per si de cas s'escapa algun clic)
         if (entrada.tipusZona == "general") {
             val quantitatActual = elementsCesta[entrada] ?: 0
             elementsCesta[entrada] = quantitatActual + 1
         }
     }
 
-    // Spec 22: posa una butaca a la cistella (si ja hi és, no la torna a posar)
+    // Spec 22 (Miguel): añade asiento y lo sincroniza con la cesta de Anna
     fun afegirSeient(seient: SeientCistella) {
         if (!esSeleccionat(seient.idEsdeveniment, seient.idTipus, seient.fila, seient.seient)) {
             seientsCesta.add(seient)
+            butaques.add(
+                ButacaCesta(
+                    idEsdeveniment = seient.idEsdeveniment,
+                    idTipus = seient.idTipus,
+                    nomTipus = seient.nomTipus,
+                    preu = seient.preu,
+                    fila = seient.fila,
+                    numero = seient.seient
+                )
+            )
         }
     }
 
-    // Spec 22: treu de la cistella la butaca d'aquest esdeveniment, tipus, fila i seient
     fun treureSeient(idEsdeveniment: String, idTipus: String, fila: Int, seient: Int) {
-        for (s in seientsCesta) {
-            if (s.idEsdeveniment == idEsdeveniment && s.idTipus == idTipus &&
-                s.fila == fila && s.seient == seient) {
-                seientsCesta.remove(s)
-                return
-            }
+        seientsCesta.removeAll {
+            it.idEsdeveniment == idEsdeveniment && it.idTipus == idTipus &&
+                    it.fila == fila && it.seient == seient
+        }
+        butaques.removeAll {
+            it.idEsdeveniment == idEsdeveniment && it.idTipus == idTipus &&
+                    it.fila == fila && it.numero == seient
         }
     }
 
-    // Spec 22: retorna true si aquesta butaca ja és a la cistella (per pintar-la de color seleccionat)
     fun esSeleccionat(idEsdeveniment: String, idTipus: String, fila: Int, seient: Int): Boolean {
-        for (s in seientsCesta) {
-            if (s.idEsdeveniment == idEsdeveniment && s.idTipus == idTipus &&
-                s.fila == fila && s.seient == seient) {
-                return true
-            }
+        return seientsCesta.any {
+            it.idEsdeveniment == idEsdeveniment && it.idTipus == idTipus &&
+                    it.fila == fila && it.seient == seient
         }
-        return false
     }
 
-    // Spec 22: retorna totes les butaques de la cistella (per mostrar-les i comprar-les)
-    fun obtenirSeients(): List<SeientCistella> {
-        return seientsCesta
-    }
+    fun obtenirSeients(): List<SeientCistella> = seientsCesta
 
-    // Retorna el nombre total d'elements acumulats a la cistella
-    //suma tambe las butacas
-    fun obtenirTotalElements(): Int {
-        return elementsCesta.values.sum() + seientsCesta.size
-    }
+    fun obtenirTotalElements(): Int = elementsCesta.values.sum() + butaques.size
 
-    // Retorna tot el contingut (ens servirà moltíssim a la Tasca 14)
-    fun obtenirElements(): Map<TipusEntrada, Int> {
-        return elementsCesta
-    }
-    //vaciar tambien butacas
+    fun obtenirElements(): Map<TipusEntrada, Int> = elementsCesta
+
     fun buidar() {
         elementsCesta.clear()
         seientsCesta.clear()
+        butaques.clear()
     }
 
-    // funcionamiento botones +/-
-    // cantidad de entradas generales
+    // Funcionamiento botones +/-
     fun canviarQuantitat(entrada: TipusEntrada, delta: Int) {
         val actual = elementsCesta[entrada] ?: return
         val nova = actual + delta
@@ -86,23 +80,50 @@ object CestaManager {
         elementsCesta.remove(entrada)
     }
 
-    //butacas numeradas
+    // Butacas numeradas (Spec 25 Anna)
     fun obtenirButaques(): List<ButacaCesta> = butaques.toList()
 
-    fun esButacaSeleccionada(idEsdeveniment: String, fila: Int,numero: Int): Boolean =
-        butaques.any { it.idEsdeveniment == idEsdeveniment && it.fila == fila && it.numero == numero
-        }
+    fun esButacaSeleccionada(idEsdeveniment: String, fila: Int, numero: Int): Boolean =
+        butaques.any { it.idEsdeveniment == idEsdeveniment && it.fila == fila && it.numero == numero }
+
     fun alternarButaca(b: ButacaCesta): Boolean {
         val treta = butaques.removeAll {
             it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
         }
-        if (!treta) butaques.add(b)
+        if (!treta) {
+            butaques.add(b)
+            seientsCesta.add(SeientCistella(b.idEsdeveniment, b.idTipus, b.nomTipus, b.preu, b.fila, b.numero))
+        } else {
+            seientsCesta.removeAll {
+                it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.seient == b.numero
+            }
+        }
         return !treta
     }
-    fun eliminarButaca(b: ButacaCesta){
+
+    fun eliminarButaca(b: ButacaCesta) {
         butaques.removeAll {
             it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
         }
+        seientsCesta.removeAll {
+            it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.seient == b.numero
+        }
     }
 
+    // Spec 23 (Marc): marca y limpia errores en las butacas rechazadas
+    fun marcarErrorsButaques(rebutjats: Set<String>) {
+        for (i in butaques.indices) {
+            val b = butaques[i]
+            val clau = "${b.idEsdeveniment}|${b.idTipus}|${b.fila}|${b.numero}"
+            butaques[i] = b.copy(ambError = rebutjats.contains(clau))
+        }
+    }
+
+    fun netejarErrorsButaques() {
+        for (i in butaques.indices) {
+            if (butaques[i].ambError) {
+                butaques[i] = butaques[i].copy(ambError = false)
+            }
+        }
+    }
 }

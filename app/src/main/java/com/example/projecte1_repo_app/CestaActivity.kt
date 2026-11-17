@@ -17,7 +17,6 @@ import org.xmlpull.v1.XmlPullParser
 
 class CestaActivity : AppCompatActivity() {
 
-    // NUEVO: campos de la clase (para usarlos desde refrescar())
     private lateinit var adapter: CestaAdapter
     private lateinit var txtTotalGlobal: TextView
 
@@ -26,11 +25,9 @@ class CestaActivity : AppCompatActivity() {
         setContentView(R.layout.activity_cesta)
 
         val listView: ListView = findViewById(R.id.listViewCesta)
-        txtTotalGlobal = findViewById(R.id.txtTotalGlobal)   // CAMBIA: sin "val"
+        txtTotalGlobal = findViewById(R.id.txtTotalGlobal)
         val btnValidar: Button = findViewById(R.id.btnValidarCesta)
 
-        // CAMBIA: todo lo antiguo (elementsCesta, llistaTextos, el for, el ArrayAdapter
-        // y txtTotalGlobal.text) se sustituye por esto:
         adapter = CestaAdapter(
             linies = construirLinies(),
             onMes = { entrada ->
@@ -58,10 +55,11 @@ class CestaActivity : AppCompatActivity() {
         listView.adapter = adapter
         refrescar()
 
-        // 5. Botó de validar: SIN CAMBIOS
         btnValidar.setOnClickListener {
             val elements = CestaManager.obtenirElements()
-            if (elements.isEmpty()) {
+            val butaques = CestaManager.obtenirButaques()
+
+            if (elements.isEmpty() && butaques.isEmpty()) {
                 Toast.makeText(this, "La cistella està buida", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -80,27 +78,37 @@ class CestaActivity : AppCompatActivity() {
                 })
             }
 
+            val seients = JSONArray()
+            for (b in butaques) {
+                seients.put(JSONObject().apply {
+                    put("idEsdeveniment", b.idEsdeveniment)
+                    put("idTipus", b.idTipus)
+                    put("fila", b.fila)
+                    put("seient", b.numero)
+                })
+            }
+
             val missatge = JSONObject().apply {
                 put("type", "comprar")
                 put("nom", nom)
                 put("correu", correu)
                 put("entrades", entrades)
+                put("seients", seients)
             }
+
+            CestaManager.netejarErrorsButaques()
+            refrescar()
 
             btnValidar.isEnabled = false
             Toast.makeText(this, "Connectant amb el servidor per validar...", Toast.LENGTH_SHORT).show()
-            enviarCompra(url, missatge.toString(), btnValidar, listView, txtTotalGlobal)
+            enviarCompra(url, missatge.toString(), btnValidar)
         }
     }
 
-    // ===== NUEVO: tres funciones =====
-
-    // Junta entradas generales y butacas en una sola lista
     private fun construirLinies(): List<LiniaCesta> =
         CestaManager.obtenirElements().map { (entrada, quantitat) -> LiniaCesta.General(entrada, quantitat) } +
                 CestaManager.obtenirButaques().map { LiniaCesta.Butaca(it) }
 
-    // Redibuja la lista y recalcula el total
     private fun refrescar() {
         adapter.actualitzar(construirLinies())
         val total = CestaManager.obtenirElements().entries.sumOf { it.key.preuTipus * it.value } +
@@ -108,7 +116,6 @@ class CestaActivity : AppCompatActivity() {
         txtTotalGlobal.text = "Total a pagar: $total €"
     }
 
-    // Diálogo de confirmación
     private fun confirmar(missatge: String, onSi: () -> Unit) {
         AlertDialog.Builder(this)
             .setMessage(missatge)
@@ -117,12 +124,7 @@ class CestaActivity : AppCompatActivity() {
             .show()
     }
 
-    // ===== A partir de aquí, igual que antes, salvo el bloque marcado =====
-
-    private fun enviarCompra(
-        url: String, json: String, btn: Button,
-        listView: ListView, txtTotal: TextView
-    ) {
+    private fun enviarCompra(url: String, json: String, btn: Button) {
         try {
             val client = object : WebSocketClient(URI(url)) {
 
@@ -133,12 +135,11 @@ class CestaActivity : AppCompatActivity() {
                 override fun onMessage(message: String?) {
                     val resp = JSONObject(message ?: return)
                     when (resp.optString("type")) {
-                        "welcome" -> { /* el servidor sempre l'envia primer: l'ignorem */ }
+                        "welcome" -> { }
 
                         "compraOk" -> {
                             val locs = resp.getJSONArray("localitzadors")
                             val llistat = (0 until locs.length()).joinToString("\n") { locs.getString(it) }
-                            // CAMBIA: solo este bloque runOnUiThread
                             runOnUiThread {
                                 CestaManager.buidar()
                                 refrescar()
@@ -150,9 +151,31 @@ class CestaActivity : AppCompatActivity() {
 
                         "error" -> {
                             val msg = resp.optString("message", "Error desconegut")
+                            val rebutjats = resp.optJSONArray("seientsRebutjats")
+
+                            val clausError = mutableSetOf<String>()
+                            val detall = StringBuilder()
+
+                            if (rebutjats != null) {
+                                for (i in 0 until rebutjats.length()) {
+                                    val s = rebutjats.getJSONObject(i)
+                                    val idEsde = s.optString("idEsdeveniment")
+                                    val idTip = s.optString("idTipus")
+                                    val fila = s.optInt("fila")
+                                    val seient = s.optInt("seient")
+
+                                    clausError.add("$idEsde|$idTip|$fila|$seient")
+                                    detall.append("\n- Fila $fila, Butaca $seient ($idTip)")
+                                }
+                            }
+
                             runOnUiThread {
+                                CestaManager.marcarErrorsButaques(clausError)
+                                refrescar()
                                 btn.isEnabled = true
-                                mostrarMissatge("Error", msg)
+
+                                val textFinal = if (detall.isNotEmpty()) "$msg:\n$detall" else msg
+                                mostrarMissatge("Error", textFinal)
                             }
                             close()
                         }
@@ -164,14 +187,14 @@ class CestaActivity : AppCompatActivity() {
                 override fun onError(ex: Exception?) {
                     runOnUiThread {
                         btn.isEnabled = true
-                        mostrarMissatge("Error de connexió ", ex?.message ?: "No s'ha pogut connectar")
+                        mostrarMissatge("Error de connexió", ex?.message ?: "No s'ha pogut connectar")
                     }
                 }
             }
             client.connect()
         } catch (e: Exception) {
             btn.isEnabled = true
-            mostrarMissatge("Error ", e.message ?: "URL no vàlida")
+            mostrarMissatge("Error", e.message ?: "URL no vàlida")
         }
     }
 
