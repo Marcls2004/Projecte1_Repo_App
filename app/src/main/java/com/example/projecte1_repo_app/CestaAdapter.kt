@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.TextView
+import android.graphics.Color
 
 // Una línea de la cistella: o bé entrada general (amb quantitat) o bé butaca numerada
 sealed class LiniaCesta {
@@ -40,6 +41,9 @@ class CestaAdapter(
         val btnMes = vista.findViewById<Button>(R.id.btnMes)
         val btnEliminar = vista.findViewById<Button>(R.id.btnEliminarButaca)
 
+        val colorNormal = (txtNom.tag as? Int) ?: txtNom.currentTextColor
+        txtNom.tag = colorNormal
+
         when (val linia = linies[position]) {
             is LiniaCesta.General -> {
                 val preu = linia.entrada.preuTipus * linia.quantitat
@@ -56,14 +60,27 @@ class CestaAdapter(
             }
             is LiniaCesta.Butaca -> {
                 val b = linia.butaca
-                txtNom.text = "${b.nomTipus} - Fila ${b.fila}, butaca ${b.numero}  ->  ${b.preu} €"
+
+                if (b.ambError) {
+                    txtNom.text =
+                        "⚠ ${b.nomTipus} - Fila ${b.fila}, butaca ${b.numero} - NO DISPONIBLE (${b.preu} €)"
+
+                    txtNom.setTextColor(Color.RED)
+                } else {
+                    txtNom.text =
+                        "${b.nomTipus} - Fila ${b.fila}, butaca ${b.numero} -> ${b.preu} €"
+
+                    txtNom.setTextColor(colorNormal)
+                }
 
                 btnMenys.visibility = View.GONE
                 txtQuantitat.visibility = View.GONE
                 btnMes.visibility = View.GONE
                 btnEliminar.visibility = View.VISIBLE
 
-                btnEliminar.setOnClickListener { onEliminarButaca(b) }
+                btnEliminar.setOnClickListener {
+                    onEliminarButaca(b)
+                }
             }
         }
         return vista

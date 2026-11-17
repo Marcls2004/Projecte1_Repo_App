@@ -58,11 +58,22 @@ class CestaActivity : AppCompatActivity() {
         listView.adapter = adapter
         refrescar()
 
-        // 5. Botó de validar: SIN CAMBIOS
+        // 5. Botó de validar
         btnValidar.setOnClickListener {
-            val elements = CestaManager.obtenirElements()
-            if (elements.isEmpty()) {
+            if (CestaManager.obtenirTotalElements() == 0) {
                 Toast.makeText(this, "La cistella està buida", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val elements = CestaManager.obtenirElements()
+            val butaques = CestaManager.obtenirButaques()
+
+            if (elements.isEmpty() && butaques.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "La cistella està buida",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -79,12 +90,24 @@ class CestaActivity : AppCompatActivity() {
                     put("quantitat", quantitat)
                 })
             }
+            // Preparar las butacas numeradas
+            val seients = JSONArray()
+
+            for (butaca in butaques) {
+                seients.put(JSONObject().apply {
+                    put("idEsdeveniment", butaca.idEsdeveniment)
+                    put("idTipus", butaca.idTipus)
+                    put("fila", butaca.fila)
+                    put("seient", butaca.numero)
+                })
+            }
 
             val missatge = JSONObject().apply {
                 put("type", "comprar")
                 put("nom", nom)
                 put("correu", correu)
                 put("entrades", entrades)
+                put("seients", seients)
             }
 
             btnValidar.isEnabled = false
@@ -150,10 +173,28 @@ class CestaActivity : AppCompatActivity() {
 
                         "error" -> {
                             val msg = resp.optString("message", "Error desconegut")
+                            val rebutjades = resp.optJSONArray("seientsRebutjats")
+
                             runOnUiThread {
+                                if (rebutjades != null) {
+                                    for (i in 0 until rebutjades.length()) {
+                                        val butaca = rebutjades.getJSONObject(i)
+
+                                        CestaManager.marcarButacaError(
+                                            butaca.getString("idEsdeveniment"),
+                                            butaca.getString("idTipus"),
+                                            butaca.getInt("fila"),
+                                            butaca.getInt("seient")
+                                        )
+                                    }
+                                }
+
+                                refrescar()
                                 btn.isEnabled = true
-                                mostrarMissatge("Error", msg)
+
+                                mostrarMissatge("Error en la compra", msg)
                             }
+
                             close()
                         }
                     }
