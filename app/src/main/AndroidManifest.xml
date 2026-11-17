@@ -54,6 +54,11 @@
             android:name=".LesMevesEntradesActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <!--Pantalla de configuracion-->
+        <activity
+            android:name=".ConfigActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

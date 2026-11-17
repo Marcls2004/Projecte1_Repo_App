@@ -30,6 +30,8 @@ class CartelleraActivity : AppCompatActivity() {
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
 
+    private var urlActual: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cartellera)
@@ -56,7 +58,6 @@ class CartelleraActivity : AppCompatActivity() {
         recyclerCartellera.layoutManager = LinearLayoutManager(this)
         recyclerCartellera.adapter = adapterCartellera
 
-        recuperarNombreUsuario()
 
         // Botó flotant: obre la cistella
         btnCistella = findViewById(R.id.btnCistella)
@@ -68,10 +69,14 @@ class CartelleraActivity : AppCompatActivity() {
             startActivity(android.content.Intent(this, LesMevesEntradesActivity::class.java))
         }
 
+        findViewById<TextView>(R.id.navUser).setOnClickListener {
+            startActivity(android.content.Intent(this, ConfigActivity::class.java))
+        }
+
         val serverUrl = intent.getStringExtra("SERVER_URL")
             ?: "ws://10.0.2.2:8888"
 
-        conectarWebSocket(serverUrl)
+
     }
 
     private fun conectarWebSocket(url: String) {
@@ -170,7 +175,10 @@ class CartelleraActivity : AppCompatActivity() {
         )
     }
 
-    private fun recuperarNombreUsuario() {
+    private fun recuperarConfiguracionYConectar() {
+        var username = "User"
+        var nuevaUrl = intent.getStringExtra("SERVER_URL") ?: "ws://10.0.2.2:8888"
+
         try {
             val fis: FileInputStream = openFileInput("CONFIG.XML")
             val parser = Xml.newPullParser()
@@ -178,32 +186,33 @@ class CartelleraActivity : AppCompatActivity() {
 
             var eventType = parser.eventType
             var tagActual = ""
-            var username = "User"
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 when (eventType) {
-                    XmlPullParser.START_TAG -> {
-                        tagActual = parser.name
-                    }
-
+                    XmlPullParser.START_TAG -> tagActual = parser.name
                     XmlPullParser.TEXT -> {
                         val texto = parser.text.trim()
-
-                        if (texto.isNotEmpty() && tagActual == "buyerName") {
-                            username = texto
+                        if (texto.isNotEmpty()) {
+                            if (tagActual == "buyerName") username = texto
+                            if (tagActual == "serverUrl") nuevaUrl = texto
                         }
                     }
                 }
-
                 eventType = parser.next()
             }
-
             fis.close()
-            navUser.text = username
-
         } catch (e: Exception) {
             e.printStackTrace()
-            navUser.text = "User"
+        }
+
+        // Actualiza el nombre en la barra superior
+        navUser.text = username
+
+        // Solo reconecta el WebSocket si es la primera vez o si la URL cambió
+        if (nuevaUrl != urlActual) {
+            urlActual = nuevaUrl
+            webSocket?.close(1000, "Cambio de URL")
+            conectarWebSocket(urlActual)
         }
     }
 
@@ -211,6 +220,7 @@ class CartelleraActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         btnCistella.text = CestaManager.obtenirTotalElements().toString()
+        recuperarConfiguracionYConectar()
     }
 
     override fun onDestroy() {
