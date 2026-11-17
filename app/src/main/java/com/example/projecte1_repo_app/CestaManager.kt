@@ -11,15 +11,14 @@ data class ButacaCesta(
 )
 
 object CestaManager {
-
     private val elementsCesta = mutableMapOf<TipusEntrada, Int>()
     private val seientsCesta = mutableListOf<SeientCistella>()
     private val butaques = mutableListOf<ButacaCesta>()
 
     fun afegirEntrada(entrada: TipusEntrada) {
         if (entrada.tipusZona == "general") {
-            val actual = elementsCesta[entrada] ?: 0
-            elementsCesta[entrada] = actual + 1
+            val quantitatActual = elementsCesta[entrada] ?: 0
+            elementsCesta[entrada] = quantitatActual + 1
         }
     }
 
@@ -70,20 +69,18 @@ object CestaManager {
         butaques.clear()
     }
 
-    // Gestió de quantitats d'entrades generals
+    // Funcionamiento botones +/-
     fun canviarQuantitat(entrada: TipusEntrada, delta: Int) {
         val actual = elementsCesta[entrada] ?: return
         val nova = actual + delta
-        if (nova >= 1) {
-            elementsCesta[entrada] = nova
-        }
+        if (nova >= 1) elementsCesta[entrada] = nova
     }
 
     fun eliminarEntrada(entrada: TipusEntrada) {
         elementsCesta.remove(entrada)
     }
 
-    // Gestió de butaques numerades (Spec 25 Anna)
+    // Butacas numeradas (Spec 25 Anna)
     fun obtenirButaques(): List<ButacaCesta> = butaques.toList()
 
     fun esButacaSeleccionada(idEsdeveniment: String, fila: Int, numero: Int): Boolean =
@@ -91,10 +88,7 @@ object CestaManager {
 
     fun alternarButaca(b: ButacaCesta): Boolean {
         val treta = butaques.removeAll {
-            it.idEsdeveniment == b.idEsdeveniment &&
-                    it.idTipus == b.idTipus &&
-                    it.fila == b.fila &&
-                    it.numero == b.numero
+            it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
         }
         if (!treta) {
             butaques.add(b)
@@ -109,17 +103,14 @@ object CestaManager {
 
     fun eliminarButaca(b: ButacaCesta) {
         butaques.removeAll {
-            it.idEsdeveniment == b.idEsdeveniment &&
-                    it.idTipus == b.idTipus &&
-                    it.fila == b.fila &&
-                    it.numero == b.numero
+            it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
         }
         seientsCesta.removeAll {
             it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.seient == b.numero
         }
     }
 
-    // Spec 23 (Marc): marca i neteja errors en les butaques rebutjades
+    // Spec 23 (Marc): marca y limpia errores en las butacas rechazadas
     fun marcarErrorsButaques(rebutjats: Set<String>) {
         for (i in butaques.indices) {
             val b = butaques[i]
