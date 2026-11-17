@@ -1,3 +1,4 @@
+
 package com.example.projecte1_repo_app
 
 data class ButacaCesta(
@@ -11,15 +12,25 @@ data class ButacaCesta(
 )
 
 object CestaManager {
+
+    private val elementsCesta = mutableMapOf<TipusEntrada, Int>()
     private val elementsCesta = mutableMapOf<TipusEntrada, Int>()
     private val seientsCesta = mutableListOf<SeientCistella>()
     private val butaques = mutableListOf<ButacaCesta>()
 
     fun afegirEntrada(entrada: TipusEntrada) {
         if (entrada.tipusZona == "general") {
-            val quantitatActual = elementsCesta[entrada] ?: 0
-            elementsCesta[entrada] = quantitatActual + 1
+            val actual = elementsCesta[entrada] ?: 0
+            elementsCesta[entrada] = actual + 1
         }
+    }
+
+    fun obtenirTotalElements(): Int {
+        return elementsCesta.values.sum() + butaques.size
+    }
+
+    fun obtenirElements(): Map<TipusEntrada, Int> {
+        return elementsCesta
     }
 
     // Spec 22 (Miguel): añade asiento y lo sincroniza con la cesta de Anna
@@ -69,17 +80,39 @@ object CestaManager {
         butaques.clear()
     }
 
+    // Gestió de quantitats d'entrades generals
+
     // Funcionamiento botones +/-
     fun canviarQuantitat(entrada: TipusEntrada, delta: Int) {
         val actual = elementsCesta[entrada] ?: return
         val nova = actual + delta
-        if (nova >= 1) elementsCesta[entrada] = nova
+
+        if (nova >= 1) {
+            elementsCesta[entrada] = nova
+        }
     }
 
     fun eliminarEntrada(entrada: TipusEntrada) {
         elementsCesta.remove(entrada)
     }
 
+    // Gestió de butaques numerades
+
+    fun obtenirButaques(): List<ButacaCesta> {
+        return butaques.toList()
+    }
+
+    fun esButacaSeleccionada(
+        idEsdeveniment: String,
+        fila: Int,
+        numero: Int
+    ): Boolean {
+        return butaques.any {
+            it.idEsdeveniment == idEsdeveniment &&
+                    it.fila == fila &&
+                    it.numero == numero
+        }
+    }
     // Butacas numeradas (Spec 25 Anna)
     fun obtenirButaques(): List<ButacaCesta> = butaques.toList()
 
@@ -88,8 +121,16 @@ object CestaManager {
 
     fun alternarButaca(b: ButacaCesta): Boolean {
         val treta = butaques.removeAll {
-            it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
+            it.idEsdeveniment == b.idEsdeveniment &&
+                    it.idTipus == b.idTipus &&
+                    it.fila == b.fila &&
+                    it.numero == b.numero
         }
+
+        if (!treta) {
+            butaques.add(b)
+        }
+
         if (!treta) {
             butaques.add(b)
             seientsCesta.add(SeientCistella(b.idEsdeveniment, b.idTipus, b.nomTipus, b.preu, b.fila, b.numero))
@@ -103,7 +144,10 @@ object CestaManager {
 
     fun eliminarButaca(b: ButacaCesta) {
         butaques.removeAll {
-            it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.numero == b.numero
+            it.idEsdeveniment == b.idEsdeveniment &&
+                    it.idTipus == b.idTipus &&
+                    it.fila == b.fila &&
+                    it.numero == b.numero
         }
         seientsCesta.removeAll {
             it.idEsdeveniment == b.idEsdeveniment && it.fila == b.fila && it.seient == b.numero
@@ -119,6 +163,23 @@ object CestaManager {
         }
     }
 
+    // Marcar les butaques rebutjades pel servidor
+
+    fun marcarButacaError(
+        idEsdeveniment: String,
+        idTipus: String,
+        fila: Int,
+        numero: Int
+    ) {
+        val index = butaques.indexOfFirst {
+            it.idEsdeveniment == idEsdeveniment &&
+                    it.idTipus == idTipus &&
+                    it.fila == fila &&
+                    it.numero == numero
+        }
+
+        if (index != -1) {
+            butaques[index] = butaques[index].copy(ambError = true)
     fun netejarErrorsButaques() {
         for (i in butaques.indices) {
             if (butaques[i].ambError) {
