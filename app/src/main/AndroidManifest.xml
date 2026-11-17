@@ -46,8 +46,17 @@
             android:name=".CartelleraActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <!-- Spec 22: selecció de butaques -->
+        <activity
+            android:name=".SeientsActivity"
+            android:exported="false" />
         <activity
             android:name=".LesMevesEntradesActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <!--Pantalla de configuracion-->
+        <activity
+            android:name=".ConfigActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

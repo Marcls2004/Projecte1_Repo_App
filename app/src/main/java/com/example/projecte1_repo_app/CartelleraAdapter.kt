@@ -42,11 +42,6 @@ class CartelleraAdapter(
         if (esdeveniment.isExpanded) {
             for (entrada in esdeveniment.tipusEntrades) {
 
-                // Spec 13: de moment només es mostren les entrades GENERALS
-                if (entrada.tipusZona != "general") {
-                    continue
-                }
-
                 val textEntrada = TextView(holder.itemView.context)
 
                 textEntrada.text =
@@ -60,6 +55,11 @@ class CartelleraAdapter(
                         holder.itemView.context,
                         DetallEsdevenimentActivity::class.java
                     )
+
+                    // Spec 22: les entrades numerades obren la pantalla de butaques
+                    if (entrada.tipusZona == "numerada") {
+                        intent.setClassName(holder.itemView.context, "com.example.projecte1_repo_app.SeientsActivity")
+                    }
 
                     intent.putExtra("idTipus", entrada.idTipus)
                     intent.putExtra("nomTipus", entrada.nomTipus)
